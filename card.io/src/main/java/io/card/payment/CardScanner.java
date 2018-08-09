@@ -16,6 +16,7 @@ import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.WindowManager;
 
 import java.io.File;
@@ -24,6 +25,9 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static android.hardware.Camera.getCameraInfo;
+import static android.hardware.Camera.getNumberOfCameras;
 
 /**
  * Encapsulates the core image scanning.
@@ -211,9 +215,19 @@ class CardScanner implements Camera.PreviewCallback, Camera.AutoFocusCallback,
         if (useCamera) {
             do {
                 try {
-                    // Camera.open() will open the back-facing camera. Front cameras are not
-                    // attempted.
-                    return Camera.open();
+                    // Find the front facing camera and attempt to open it
+                    int numberOfCameras = getNumberOfCameras();
+                    Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+                    for (int i = 0; i < numberOfCameras; i++) {
+                        getCameraInfo(i, cameraInfo);
+                        if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                            Camera camera = Camera.open(i);
+
+                            return camera;
+                        }
+                    }
+
+                    return null;
                 } catch (RuntimeException e) {
                     try {
                         Log.w(Util.PUBLIC_LOG_TAG,
@@ -604,7 +618,7 @@ class CardScanner implements Camera.PreviewCallback, Camera.AutoFocusCallback,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             android.hardware.Camera.CameraInfo info =
                     new android.hardware.Camera.CameraInfo();
-            android.hardware.Camera.getCameraInfo(0, info);
+            getCameraInfo(0, info);
             int degrees = getRotationalOffset();
             int cameraOrientation = info.orientation;
             result = (cameraOrientation - degrees + 360) % 360;
