@@ -17,6 +17,7 @@ android {
 
         ndk {
             moduleName "cardioRecognizer"
+            abiFilters "armeabi-v7a"
         }
 
         consumerProguardFiles 'proguard.cfg'
