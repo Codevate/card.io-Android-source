@@ -16,13 +16,13 @@ android {
         targetSdkVersion rootProject.ext.sdkVersion
 
         ndk {
-            moduleName "cardioRecognizer"
-            abiFilters "armeabi-v7a"
+            moduleName 'cardioRecognizer'
+            abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
 
         consumerProguardFiles 'proguard.cfg'
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
 
     resourcePrefix 'cio_'
