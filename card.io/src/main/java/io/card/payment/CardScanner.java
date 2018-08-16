@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -225,12 +226,11 @@ class CardScanner implements Camera.PreviewCallback, Camera.AutoFocusCallback,
                     // Find the front facing camera and attempt to open it
                     int numberOfCameras = getNumberOfCameras();
                     Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-                    for (int i = 0; i < numberOfCameras; i++) {
-                        getCameraInfo(i, cameraInfo);
-                        if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                            Camera camera = Camera.open(i);
-                            return camera;
-                        }
+
+                    if (numberOfCameras > 0) {
+                        getCameraInfo(0, cameraInfo);
+                        Camera camera = Camera.open(0);
+                        return camera;
                     }
 
                     return null;
@@ -447,13 +447,12 @@ class CardScanner implements Camera.PreviewCallback, Camera.AutoFocusCallback,
         if (data == null) {
             return;
         }
-        byte[] mirroredData = this.mirrorImageData(data);
 
         if (processingInProgress) {
             // return frame buffer to pool
             numFramesSkipped++;
             if (camera != null) {
-                camera.addCallbackBuffer(mirroredData);
+                camera.addCallbackBuffer(data);
             }
             return;
         }
@@ -469,7 +468,7 @@ class CardScanner implements Camera.PreviewCallback, Camera.AutoFocusCallback,
         DetectionInfo dInfo = new DetectionInfo();
 
         /** pika **/
-        nScanFrame(mirroredData, mPreviewWidth, mPreviewHeight, mFrameOrientation, dInfo, detectedBitmap, mScanExpiry);
+        nScanFrame(data, mPreviewWidth, mPreviewHeight, mFrameOrientation, dInfo, detectedBitmap, mScanExpiry);
 
         boolean sufficientFocus = (dInfo.focusScore >= MIN_FOCUS_SCORE);
 
@@ -481,7 +480,7 @@ class CardScanner implements Camera.PreviewCallback, Camera.AutoFocusCallback,
         // give the image buffer back to the camera, AFTER we're done reading
         // the image.
         if (camera != null) {
-            camera.addCallbackBuffer(mirroredData);
+            camera.addCallbackBuffer(data);
         }
         processingInProgress = false;
 
@@ -661,92 +660,5 @@ class CardScanner implements Camera.PreviewCallback, Camera.AutoFocusCallback,
             rotationOffset = 0;
         }
         return rotationOffset;
-    }
-
-    private byte[] mirrorImageData(byte[] input) {
-        this.writeCameraPreviewToFile(input, "original.png");
-
-        // Encode the byte array into an YUV image
-        YuvImage yuvImage = new YuvImage(input, ImageFormat.NV21, mPreviewWidth, mPreviewHeight, null);
-
-        // Convert the image into a jpeg byte array
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        yuvImage.compressToJpeg(new Rect(0, 0, mPreviewWidth, mPreviewHeight), 100, byteArrayOutputStream);
-        byte[] jpegByteArray = byteArrayOutputStream.toByteArray();
-
-        // Convert the jpeg into a bitmap
-        Bitmap originalBitmap = BitmapFactory.decodeByteArray(jpegByteArray, 0, jpegByteArray.length);
-
-        // Flip the bitmap
-        Matrix matrix = new Matrix();
-        matrix.preScale(-1, 1);
-        matrix.preRotate(180);
-        Bitmap mirroredBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.getWidth(), originalBitmap.getHeight(), matrix, false);
-        mirroredBitmap.setDensity(DisplayMetrics.DENSITY_DEFAULT);
-
-        int mirroredWidth = mirroredBitmap.getWidth();
-        int mirroredHeight = mirroredBitmap.getHeight();
-        int[] mirroredIntArray = new int[mirroredWidth * mirroredHeight];
-        mirroredBitmap.getPixels(mirroredIntArray, 0, mirroredWidth, 0, 0, mirroredWidth, mirroredHeight);
-
-        // Encode the mirrored bitmap back into a NV21 byte array
-        byte[] yuv = new byte[mirroredWidth * mirroredHeight * 3/2];
-        encodeYUV420SP(yuv, mirroredIntArray, mirroredWidth, mirroredHeight);
-
-        mirroredBitmap.recycle();
-
-        writeCameraPreviewToFile(yuv, "mirrored.png");
-
-        return yuv;
-    }
-
-    private void writeCameraPreviewToFile(byte[] data, String name) {
-        try {
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), name);
-            FileOutputStream fos = new FileOutputStream(file);
-
-            YuvImage originalYuvImage = new YuvImage(data, ImageFormat.NV21, mPreviewWidth, mPreviewHeight, null);
-            originalYuvImage.compressToJpeg(new Rect(0, 0, mPreviewWidth, mPreviewHeight), 100, fos);
-
-            fos.flush();
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void encodeYUV420SP(byte[] yuv420sp, int[] argb, int width, int height) {
-        final int frameSize = width * height;
-
-        int yIndex = 0;
-        int uvIndex = frameSize;
-
-        int a, R, G, B, Y, U, V;
-        int index = 0;
-        for (int j = 0; j < height; j++) {
-            for (int i = 0; i < width; i++) {
-
-                a = (argb[index] & 0xff000000) >> 24; // a is not used obviously
-                R = (argb[index] & 0xff0000) >> 16;
-                G = (argb[index] & 0xff00) >> 8;
-                B = (argb[index] & 0xff) >> 0;
-
-                // well known RGB to YUV algorithm
-                Y = ( (  66 * R + 129 * G +  25 * B + 128) >> 8) +  16;
-                U = ( ( -38 * R -  74 * G + 112 * B + 128) >> 8) + 128;
-                V = ( ( 112 * R -  94 * G -  18 * B + 128) >> 8) + 128;
-
-                // NV21 has a plane of Y and interleaved planes of VU each sampled by a factor of 2
-                //    meaning for every 4 Y pixels there are 1 V and 1 U.  Note the sampling is every other
-                //    pixel AND every other scanline.
-                yuv420sp[yIndex++] = (byte) ((Y < 0) ? 0 : ((Y > 255) ? 255 : Y));
-                if (j % 2 == 0 && index % 2 == 0) {
-                    yuv420sp[uvIndex++] = (byte)((V<0) ? 0 : ((V > 255) ? 255 : V));
-                    yuv420sp[uvIndex++] = (byte)((U<0) ? 0 : ((U > 255) ? 255 : U));
-                }
-
-                index ++;
-            }
-        }
     }
 }

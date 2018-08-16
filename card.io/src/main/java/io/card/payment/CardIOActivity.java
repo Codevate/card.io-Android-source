@@ -504,6 +504,7 @@ public final class CardIOActivity extends Activity {
         if (orientation > 360) {
             orientation -= 360;
         }
+
         int degrees;
 
         degrees = -1;
@@ -521,17 +522,10 @@ public final class CardIOActivity extends Activity {
             degrees = 270;
             mFrameOrientation = ORIENTATION_LANDSCAPE_RIGHT;
         }
-        if (degrees >= 0 && degrees != mLastDegrees) {
-            mCardScanner.setDeviceOrientation(mFrameOrientation);
-            setDeviceDegrees(degrees);
-            if (degrees == 90) {
-                rotateCustomOverlay(270);
-            } else if (degrees == 270) {
-                rotateCustomOverlay(90);
-            } else {
-                rotateCustomOverlay(degrees);
-            }
-        }
+
+        mCardScanner.setDeviceOrientation(ORIENTATION_LANDSCAPE_RIGHT);
+        setDeviceDegrees(degrees);
+        rotateCustomOverlay(270);
     }
 
     /**
@@ -868,7 +862,7 @@ public final class CardIOActivity extends Activity {
         // adjust for surface view y offset
         mGuideFrame.top += sv.getTop();
         mGuideFrame.bottom += sv.getTop();
-        mOverlay.setGuideAndRotation(mGuideFrame, degrees);
+        mOverlay.setGuideAndRotation(mGuideFrame, 270);
         mLastDegrees = degrees;
     }
 
