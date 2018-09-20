@@ -464,7 +464,7 @@ class CardScanner implements Camera.PreviewCallback, Camera.AutoFocusCallback,
         // TODO: eliminate this foolishness and measure/layout properly.
         if (mFirstPreviewFrame) {
             mFirstPreviewFrame = false;
-            mFrameOrientation = ORIENTATION_PORTRAIT;
+            mFrameOrientation = 4;
             mScanActivityRef.get().onFirstFrame();
         }
 
