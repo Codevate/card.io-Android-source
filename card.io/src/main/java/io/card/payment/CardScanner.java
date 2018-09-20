@@ -29,10 +29,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 import static android.hardware.Camera.getCameraInfo;
 import static android.hardware.Camera.getNumberOfCameras;
@@ -124,6 +126,7 @@ class CardScanner implements Camera.PreviewCallback, Camera.AutoFocusCallback,
     private int numAutoRefocus;
     private int numManualTorchChange;
     private int numFramesSkipped;
+
 
     // ------------------------------------------------------------------------
     // STATIC INITIALIZATION

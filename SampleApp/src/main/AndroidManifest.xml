@@ -7,7 +7,6 @@
 
     <application
         android:name=".SampleApplication"
-        android:label="card.io Sample App"
         android:theme="@style/MyTheme">
 
         <activity android:name=".SampleActivity">

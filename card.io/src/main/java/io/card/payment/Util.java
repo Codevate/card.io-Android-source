@@ -72,44 +72,6 @@ class Util {
     }
 
     private static boolean hardwareSupportCheck() {
-        if (!CardScanner.processorSupported()) {
-            Log.w(PUBLIC_LOG_TAG, "- Processor type is not supported");
-            return false;
-        }
-
-        // Camera needs to open
-        Camera c = null;
-        try {
-            c = Camera.open();
-        } catch (RuntimeException e) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                return true;
-            } else {
-                Log.w(PUBLIC_LOG_TAG, "- Error opening camera: " + e);
-                throw new CameraUnavailableException();
-            }
-        }
-        if (c == null) {
-            Log.w(PUBLIC_LOG_TAG, "- No camera found");
-            return false;
-        } else {
-            List<Camera.Size> list = c.getParameters().getSupportedPreviewSizes();
-            c.release();
-
-            boolean supportsVGA = false;
-
-            for (Camera.Size s : list) {
-                if (s.width == 640 && s.height == 480) {
-                    supportsVGA = true;
-                    break;
-                }
-            }
-
-            if (!supportsVGA) {
-                Log.w(PUBLIC_LOG_TAG, "- Camera resolution is insufficient");
-                return false;
-            }
-        }
         return true;
     }
 
