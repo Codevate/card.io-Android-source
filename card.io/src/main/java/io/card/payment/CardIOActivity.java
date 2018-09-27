@@ -523,9 +523,9 @@ public final class CardIOActivity extends Activity {
             mFrameOrientation = ORIENTATION_LANDSCAPE_RIGHT;
         }
 
-        mCardScanner.setDeviceOrientation(ORIENTATION_LANDSCAPE_LEFT);
+        mCardScanner.setDeviceOrientation(mFrameOrientation);
         setDeviceDegrees(degrees);
-        rotateCustomOverlay(90);
+        rotateCustomOverlay(degrees);
     }
 
     /**

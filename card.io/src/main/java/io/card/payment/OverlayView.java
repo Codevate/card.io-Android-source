@@ -117,7 +117,7 @@ class OverlayView extends View {
         super(captureActivity, attributeSet);
 
         mShowTorch = showTorch;
-        mScanActivityRef = new WeakReference<CardIOActivity>(captureActivity);
+        mScanActivityRef = new WeakReference<>(captureActivity);
 
         mRotationFlip = 1;
 
