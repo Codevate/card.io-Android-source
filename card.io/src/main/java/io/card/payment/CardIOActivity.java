@@ -207,6 +207,12 @@ public final class CardIOActivity extends Activity {
     public static final String EXTRA_RETURN_CARD_IMAGE = "io.card.payment.returnCardImage";
 
     /**
+     * Boolean extra. Optional. If this value is set to <code>false</code> the card image will not be shown
+     * on the data entry screen.
+     */
+    public static final String EXTRA_DISPLAY_CARD_IMAGE = "io.card.payment.displayCardImage";
+
+    /**
      * Integer extra. Optional. If this value is provided the view will be inflated and will overlay
      * the camera during the scan process. The integer value must be the id of a valid layout
      * resource.

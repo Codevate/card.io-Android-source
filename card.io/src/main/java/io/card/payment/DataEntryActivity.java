@@ -131,7 +131,7 @@ public final class DataEntryActivity extends Activity implements TextWatcher {
 
         autoAcceptDone = getIntent().getBooleanExtra("debug_autoAcceptResult", false);
 
-        if (capture != null) {
+        if (capture != null && getIntent().getBooleanExtra(CardIOActivity.EXTRA_DISPLAY_CARD_IMAGE, true)) {
             numberValidator = new CardNumberValidator(capture.cardNumber);
 
             cardView = new ImageView(this);
@@ -176,15 +176,21 @@ public final class DataEntryActivity extends Activity implements TextWatcher {
             numberEdit.setId(editTextIdCounter++);
             numberEdit.setMaxLines(1);
             numberEdit.setImeOptions(EditorInfo.IME_ACTION_DONE);
-            numberEdit.setTextAppearance(getApplicationContext(),
-                    android.R.attr.textAppearanceLarge);
             numberEdit.setInputType(InputType.TYPE_CLASS_PHONE);
             numberEdit.setHint("1234 5678 1234 5678");
             if(! useApplicationTheme ) {
                 numberEdit.setHintTextColor(Appearance.TEXT_COLOR_EDIT_TEXT_HINT);
+                numberEdit.setTextAppearance(getApplicationContext(), android.R.attr.textAppearanceLarge);
             }
 
-            numberValidator = new CardNumberValidator();
+            if (capture != null) {
+                numberValidator = new CardNumberValidator(capture.cardNumber);
+            } else {
+                numberValidator = new CardNumberValidator();
+            }
+            if (numberValidator.hasFullLength()) {
+                numberEdit.setText(numberValidator.getValue());
+            }
             numberEdit.addTextChangedListener(numberValidator);
             numberEdit.addTextChangedListener(this);
             numberEdit.setFilters(new InputFilter[] { new DigitsKeyListener(), numberValidator });
@@ -222,12 +228,11 @@ public final class DataEntryActivity extends Activity implements TextWatcher {
             expiryEdit.setId(editTextIdCounter++);
             expiryEdit.setMaxLines(1);
             expiryEdit.setImeOptions(EditorInfo.IME_ACTION_DONE);
-            expiryEdit.setTextAppearance(getApplicationContext(),
-                    android.R.attr.textAppearanceLarge);
             expiryEdit.setInputType(InputType.TYPE_CLASS_PHONE);
             expiryEdit.setHint(LocalizedStrings.getString(StringKey.EXPIRES_PLACEHOLDER));
             if(! useApplicationTheme ) {
                 expiryEdit.setHintTextColor(Appearance.TEXT_COLOR_EDIT_TEXT_HINT);
+                expiryEdit.setTextAppearance(getApplicationContext(), android.R.attr.textAppearanceLarge);
             }
 
             if (capture != null) {
@@ -269,11 +274,11 @@ public final class DataEntryActivity extends Activity implements TextWatcher {
             cvvEdit.setId(editTextIdCounter++);
             cvvEdit.setMaxLines(1);
             cvvEdit.setImeOptions(EditorInfo.IME_ACTION_DONE);
-            cvvEdit.setTextAppearance(getApplicationContext(), android.R.attr.textAppearanceLarge);
             cvvEdit.setInputType(InputType.TYPE_CLASS_PHONE);
             cvvEdit.setHint("123");
             if(! useApplicationTheme ) {
                 cvvEdit.setHintTextColor(Appearance.TEXT_COLOR_EDIT_TEXT_HINT);
+                cvvEdit.setTextAppearance(getApplicationContext(), android.R.attr.textAppearanceLarge);
             }
 
             int length = 4;
@@ -317,8 +322,6 @@ public final class DataEntryActivity extends Activity implements TextWatcher {
             postalCodeEdit.setId(editTextIdCounter++);
             postalCodeEdit.setMaxLines(1);
             postalCodeEdit.setImeOptions(EditorInfo.IME_ACTION_DONE);
-            postalCodeEdit.setTextAppearance(getApplicationContext(),
-                    android.R.attr.textAppearanceLarge);
             if (postalCodeNumericOnly) {
                 // class is phone to be consistent with other numeric fields.  Perhaps this could be improved.
                 postalCodeEdit.setInputType(InputType.TYPE_CLASS_PHONE);
@@ -327,6 +330,7 @@ public final class DataEntryActivity extends Activity implements TextWatcher {
             }
             if(! useApplicationTheme ) {
                 postalCodeEdit.setHintTextColor(Appearance.TEXT_COLOR_EDIT_TEXT_HINT);
+                postalCodeEdit.setTextAppearance(getApplicationContext(), android.R.attr.textAppearanceLarge);
             }
 
             postalCodeValidator = new MaxLengthValidator(MAX_POSTAL_CODE_LENGTH);
@@ -610,11 +614,10 @@ public final class DataEntryActivity extends Activity implements TextWatcher {
             cardholderNameEdit.setId(editTextIdCounter++);
             cardholderNameEdit.setMaxLines(1);
             cardholderNameEdit.setImeOptions(EditorInfo.IME_ACTION_DONE);
-            cardholderNameEdit.setTextAppearance(getApplicationContext(),
-                    android.R.attr.textAppearanceLarge);
             cardholderNameEdit.setInputType(InputType.TYPE_CLASS_TEXT);
             if(! useApplicationTheme ) {
                 cardholderNameEdit.setHintTextColor(Appearance.TEXT_COLOR_EDIT_TEXT_HINT);
+                cardholderNameEdit.setTextAppearance(getApplicationContext(), android.R.attr.textAppearanceLarge);
             }
 
             cardholderNameValidator = new MaxLengthValidator(MAX_CARDHOLDER_NAME_LENGTH);
