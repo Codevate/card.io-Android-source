@@ -134,6 +134,11 @@ public final class CardIOActivity extends Activity {
     public static final String EXTRA_SUPPRESS_MANUAL_ENTRY = "io.card.payment.suppressManual";
 
     /**
+     * Boolean extra. Optional. Defaults to <code>false</code>. Shows a cancel button on the scan screen.
+     */
+    public static final String EXTRA_SHOW_CANCEL_BUTTON = "io.card.payment.showCancelButton";
+
+    /**
      * String extra. Optional. The preferred language for all strings appearing in the user
      * interface. If not set, or if set to null, defaults to the device's current language setting.
      * <br><br>
@@ -270,6 +275,7 @@ public final class CardIOActivity extends Activity {
     private static final int FRAME_ID = 1;
     private static final int UIBAR_ID = 2;
     private static final int KEY_BTN_ID = 3;
+    private static final int CANCEL_BTN_ID = 4;
 
     private static final String BUNDLE_WAITING_FOR_PERMISSION = "io.card.payment.waitingForPermission";
 
@@ -293,6 +299,7 @@ public final class CardIOActivity extends Activity {
     private int mLastDegrees;
     private int mFrameOrientation;
     private boolean suppressManualEntry;
+    private boolean showCancelButton;
     private boolean mDetectOnly;
     private LinearLayout customOverlayLayout;
     private boolean waitingForPermission;
@@ -349,7 +356,7 @@ public final class CardIOActivity extends Activity {
         }
 
         suppressManualEntry = clientData.getBooleanExtra(EXTRA_SUPPRESS_MANUAL_ENTRY, false);
-
+        showCancelButton = clientData.getBooleanExtra(EXTRA_SHOW_CANCEL_BUTTON, false);
 
         if (savedInstanceState != null) {
             waitingForPermission = savedInstanceState.getBoolean(BUNDLE_WAITING_FOR_PERMISSION);
@@ -948,7 +955,7 @@ public final class CardIOActivity extends Activity {
 
         mUIBar.setId(UIBAR_ID);
 
-        mUIBar.setGravity(Gravity.BOTTOM | Gravity.RIGHT);
+        mUIBar.setGravity(Gravity.BOTTOM);
 
         // Show the keyboard button
         if (!suppressManualEntry) {
@@ -973,11 +980,40 @@ public final class CardIOActivity extends Activity {
             keyboardParams.width = LayoutParams.WRAP_CONTENT;
             keyboardParams.height = LayoutParams.WRAP_CONTENT;
             keyboardParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            keyboardParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             ViewUtil.setPadding(keyboardBtn, Appearance.CONTAINER_MARGIN_HORIZONTAL, null,
                     Appearance.CONTAINER_MARGIN_HORIZONTAL, null);
             ViewUtil.setMargins(keyboardBtn, Appearance.BASE_SPACING, Appearance.BASE_SPACING,
                     Appearance.BASE_SPACING, Appearance.BASE_SPACING);
-
+        }
+        // Show the cancel button
+        if (showCancelButton) {
+            Button cancelBtn = new Button(this);
+            cancelBtn.setId(CANCEL_BTN_ID);
+            cancelBtn.setText("Cancel");
+            cancelBtn.setOnClickListener(new Button.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finish();
+                }
+            });
+            mUIBar.addView(cancelBtn);
+            ViewUtil.styleAsButton(cancelBtn, false, this, useApplicationTheme);
+            if(!useApplicationTheme){
+                cancelBtn.setTextSize(Appearance.TEXT_SIZE_SMALL_BUTTON);
+            }
+            cancelBtn.setMinimumHeight(ViewUtil.typedDimensionValueToPixelsInt(
+                Appearance.SMALL_BUTTON_HEIGHT, this));
+            RelativeLayout.LayoutParams keyboardParams = (RelativeLayout.LayoutParams) cancelBtn
+                .getLayoutParams();
+            keyboardParams.width = LayoutParams.WRAP_CONTENT;
+            keyboardParams.height = LayoutParams.WRAP_CONTENT;
+            keyboardParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            keyboardParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            ViewUtil.setPadding(cancelBtn, Appearance.CONTAINER_MARGIN_HORIZONTAL, null,
+                Appearance.CONTAINER_MARGIN_HORIZONTAL, null);
+            ViewUtil.setMargins(cancelBtn, Appearance.BASE_SPACING, Appearance.BASE_SPACING,
+                Appearance.BASE_SPACING, Appearance.BASE_SPACING);
         }
         // Device has a flash, show the flash button
         RelativeLayout.LayoutParams uiParams = new RelativeLayout.LayoutParams(
@@ -1004,6 +1040,7 @@ public final class CardIOActivity extends Activity {
 
                 inflater.inflate(resourceId, customOverlayLayout);
                 mMainLayout.addView(customOverlayLayout);
+                mUIBar.bringToFront();
             }
         }
 
