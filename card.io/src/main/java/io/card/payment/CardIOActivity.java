@@ -231,6 +231,12 @@ public final class CardIOActivity extends Activity {
      */
     public static final String EXTRA_KEEP_APPLICATION_THEME = "io.card.payment.keepApplicationTheme";
 
+    /**
+     * Boolean extra. Optional. If this value is set to <code>true</code>, the orientation listener will be
+     * enabled. Defaults to true.
+     */
+    public static final String EXTRA_ENABLE_ORIENTATION_LISTENER = "io.card.payment.enableOrientationListener";
+
 
     /**
      * Boolean extra. Used for testing only.
@@ -304,6 +310,7 @@ public final class CardIOActivity extends Activity {
     private Rect mGuideFrame;
     private int mLastDegrees;
     private int mFrameOrientation;
+    private boolean enableOrientationListener;
     private boolean suppressManualEntry;
     private boolean showCancelButton;
     private boolean mDetectOnly;
@@ -349,6 +356,8 @@ public final class CardIOActivity extends Activity {
 
         ResolveInfo resolveInfo;
         String errorMsg;
+
+        enableOrientationListener = clientData.getBooleanExtra(EXTRA_ENABLE_ORIENTATION_LISTENER, true);
 
         // Check for DataEntryActivity's portrait orientation
 
@@ -506,7 +515,7 @@ public final class CardIOActivity extends Activity {
     }
 
     private void doOrientationChange(int orientation) {
-        if (orientation < 0 || mCardScanner == null) {
+        if (!enableOrientationListener || orientation < 0 || mCardScanner == null) {
             return;
         }
 
